@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    
+    <link rel="stylesheet" href="css/style.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+    <meta charset="utf-8">
+    <title>2020 Covid-19 Cases</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.8.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.8.1/mapbox-gl.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+        
+/* the layout of the legend panel */        
+#legend {    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 110px;
+    background:#fff;
+    margin-right: 20px;
+    margin-bottom: 40px;
+    font-family: 'Open Sans', sans-serif;
+    padding: 10px 20px 10px 10px;
+    border-radius: 3px;
+    text-align: center;
+   
+}
+
+/* each line for a break */
+.break {
+    position: relative;
+    margin: 0px;
+    padding: 0px;
+}
+
+/* basic style for a dot/circle */
+.dot {
+    display: inline-block;
+    margin-top: 5px;
+    border-radius: 50%;
+    opacity: 0.7;
+}
+
+/* the label for the dot */
+.dot-label {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-style: italic;
+}
+
+/* the text color of a hyper link */
+a {
+    color: black
+}
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="legend"></div>
+
+    <script>
+    mapboxgl.accessToken =
+        'pk.eyJ1IjoiaG9sbHlzdGV3IiwiYSI6ImNta3k3cTJqcDA0YnEzY3E3eGZyOTFmazIifQ.FTqjbVJmwX5n0w6SnEKo9A';
+    let map = new mapboxgl.Map({
+        container: 'map', // container ID
+        style: 'mapbox://styles/mapbox/dark-v10',
+        center: [-98, 39],
+        zoom: 4,
+        minZoom: 3
+    });
+
+         // define the case breaks and corresponding circle radii
+const caseBreaks = [
+    0,
+    500,
+    1000,
+    2500,
+    5000,
+    10000,
+    25000,
+    50000,
+    100000
+];
+        
+const radii = [
+    2,
+    4,
+    6,
+    8,
+    12,
+    16,
+    22,
+    28,
+    36
+];
+const colors = [
+    '#fee5d9',
+    '#fcae91',
+    '#fb6a4a',
+    '#ef3b2c',
+    '#cb181d',
+    '#99000d',
+    '#67000d',
+    '#3b0000',
+    '#1a0000'
+];
+        
+        //load data to the map as new layers.
+        
+    map.on('load', () => { //simplifying the function statement: arrow with brackets to define a function
+    // when loading a geojson, there are two steps
+    // add a source of the data and then add the layer out of the source
+    map.addSource('covid', {
+    type: 'geojson',
+    data: 'assets/us-covid-2020-counts.geojson'
+    });
+    map.addLayer({
+        'id': 'covid-cases',
+        'type': 'circle',
+        'source': 'covid',
+        paint: {
+            'circle-radius': [
+            'step',
+            ['get', 'cases'],
+                radii[0],
+                caseBreaks[1], radii[1],
+                caseBreaks[2], radii[2],
+                caseBreaks[3], radii[3],
+                caseBreaks[4], radii[4],
+                caseBreaks[5], radii[5],
+                caseBreaks[6], radii[6],
+                caseBreaks[7], radii[7],
+                caseBreaks[8], radii[8]
+                ],
+                
+            'circle-color': [
+                'step',
+                ['get', 'cases'],
+                colors[0],
+                caseBreaks[1], colors[1],
+                caseBreaks[2], colors[2],
+                caseBreaks[3], colors[3],
+                caseBreaks[4], colors[4],
+                caseBreaks[5], colors[5],
+                caseBreaks[6], colors[6],
+                caseBreaks[7], colors[7],
+                caseBreaks[8], colors[8]
+                ],
+                    'circle-stroke-color': 'white',
+                    'circle-stroke-width': 0.5
+                }
+            });
+    // click on county to view Covid-19 cases
+        map.on('click', 'covid-cases', (event) => {
+            const p = event.features[0].properties;
+            new mapboxgl.Popup()
+            .setLngLat(event.features[0].geometry.coordinates)
+            .setHTML(`
+            <strong>${p.county}, ${p.state}</strong><br>
+            ${p.cases.toLocaleString()} cases (2020)
+            `           )
+            .addTo(map);
+        })
+    // create legend
+        const legend = document.getElementById('legend');
+        const labels = ['<strong>COVID-19 Cases</strong>'];
+        const legendCases = [
+            '< 500',
+            '500–999',
+            '1,000–2,499',
+            '2,500–4,999',                '5,000–9,999',
+            '5,000–9,999',
+            '10,000–24,999',
+            '25,000–49,999',
+            '50,000–99,999',
+            '100,000+'
+        ];
+            
+        for (let i = 0; i < radii.length; i++) {
+            const size = radii[i] * 2;
+            labels.push(
+            `<p class="break">
+                <i class="dot" style="
+                width:${size}px;
+                height:${size}px;
+                background:${colors[i]};
+            "></i>
+            <span class="dot-label" style="top:${size/2}px">
+                ${legendCases[i]}
+            </span>
+        </p>`
+    );
+}
+                    
+            legend.innerHTML = labels.join(''); 
+    });
+        
+    </script>
+
+<div id="title">COVID-19 Cases by County (2020)</div>
+<div id="subtitle">Proportional Symbol Map</div>
+
+<style>
+    
+#title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-top: 20px;
+    margin-left: 20px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 25pt;
+    color: white
+}
+
+
+#subtitle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-top: 70px;
+    margin-left: 190px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 15pt;
+    color: white
+}
+</style>
+
+</body>
+
+</html>
