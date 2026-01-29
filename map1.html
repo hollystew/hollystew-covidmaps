@@ -54,7 +54,7 @@ p {
     padding: 10px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     line-height: 18px;
-    height: 210px;
+    height: 260px;
     margin-bottom: 40px;
     width: 150px;
 }
@@ -81,7 +81,6 @@ p {
         <h2>US 2020 Covid Rates</h2>
         <div id='text-description'>
             <p>Hover over a county!</p>
-            <p>Data: The New York Times (2020), Counties: US Census Bureau</p>
         </div>
     </div>
     <div class='map-overlay' id='legend'></div>
@@ -169,7 +168,7 @@ const colors = [
 ];
 
 const legend = document.getElementById('legend');
-legend.innerHTML = "<b>COVID-19 cases per 1,000 people</b><br><br>";
+legend.innerHTML = "<b>COVID-19 cases per 1,000 people</b> </b>Credit: American Community Survey 2018<br><br>";
 
 layers.forEach((layer, i) => {
     const color = colors[i];
