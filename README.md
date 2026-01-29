@@ -1,4 +1,4 @@
-# U.S. COVID-19 2020 Thematic Maps  
+# US Covid-19 2020 Thematic Maps  
 
 ### Project Overview
 
